@@ -11,7 +11,7 @@ export default function AdminLayout({
       <header className="border-b">
         <div className="container mx-auto flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold">Rickert Admin</h1>
+            <h1 className="text-lg font-semibold">Kiosk Admin</h1>
             <Link
               href="/"
               target="_blank"

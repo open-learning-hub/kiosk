@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Rickert Kiosk Deploy ==="
+echo "=== Kiosk Deploy ==="
 
 echo ">> Navigating to ~/src/kiosk..."
 cd ~/src/kiosk

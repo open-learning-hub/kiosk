@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rickert - Digital Signage",
+  title: "Kiosk - Digital Signage",
   description: "Digital signage kiosk for Raspberry Pi",
 };
 
