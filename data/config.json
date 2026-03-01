@@ -7,7 +7,7 @@
       "type": "video",
       "enabled": false,
       "duration": 5,
-      "displayOrder": 0,
+      "displayOrder": 1,
       "mediaFile": "sample-video.mp4",
       "videoLoop": true
     },
@@ -17,7 +17,7 @@
       "type": "image",
       "enabled": true,
       "duration": 5,
-      "displayOrder": 1,
+      "displayOrder": 2,
       "mediaFile": "sample-image.jpg",
       "imageFit": "contain"
     },
@@ -35,7 +35,7 @@
       "type": "image",
       "duration": 5,
       "enabled": true,
-      "displayOrder": 2,
+      "displayOrder": 0,
       "mediaFile": "1772365971828-rick-image-test.jpeg",
       "imageFit": "contain",
       "id": "44c8c0b6-3916-48e8-b60a-01e36841067d"
