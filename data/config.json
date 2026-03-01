@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "pages": [
+    {
+      "id": "e7b7e02b-af54-4b18-a5b3-87fe420f1088",
+      "name": "Marketing Video",
+      "type": "video",
+      "enabled": false,
+      "duration": 5,
+      "displayOrder": 0,
+      "mediaFile": "sample-video.mp4",
+      "videoLoop": true
+    },
+    {
+      "id": "8548d0ef-5b58-42ff-abf1-051e32c88eb0",
+      "name": "Product Photo",
+      "type": "image",
+      "enabled": true,
+      "duration": 5,
+      "displayOrder": 1,
+      "mediaFile": "sample-image.jpg",
+      "imageFit": "contain"
+    },
+    {
+      "id": "b9f82bbd-b8c3-4aac-99d2-6b61df1ae8e8",
+      "name": "Wikipedia",
+      "type": "website",
+      "enabled": true,
+      "duration": 5,
+      "displayOrder": 3,
+      "url": "https://www.wikipedia.org"
+    },
+    {
+      "name": "Dog Image",
+      "type": "image",
+      "duration": 5,
+      "enabled": true,
+      "displayOrder": 2,
+      "mediaFile": "1772365971828-rick-image-test.jpeg",
+      "imageFit": "contain",
+      "id": "44c8c0b6-3916-48e8-b60a-01e36841067d"
+    }
+  ],
+  "settings": {
+    "defaultDuration": 15,
+    "pollInterval": 10
+  }
+}
