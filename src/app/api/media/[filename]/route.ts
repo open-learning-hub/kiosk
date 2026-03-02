@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { createReadStream, statSync } from "fs";
-import { Readable } from "stream";
+import { readFileSync, statSync } from "fs";
 import { getUploadPath, getMimeType, isAllowedFile } from "@/lib/media";
 import path from "path";
 
@@ -38,6 +37,8 @@ export async function GET(
   const fileSize = stat.size;
   const rangeHeader = request.headers.get("range");
 
+  const buffer = readFileSync(filePath);
+
   if (rangeHeader) {
     const match = rangeHeader.match(/bytes=(\d+)-(\d*)/);
     if (match) {
@@ -45,10 +46,7 @@ export async function GET(
       const end = match[2] ? parseInt(match[2], 10) : fileSize - 1;
       const chunkSize = end - start + 1;
 
-      const stream = createReadStream(filePath, { start, end });
-      const webStream = Readable.toWeb(stream) as ReadableStream;
-
-      return new Response(webStream, {
+      return new Response(buffer.subarray(start, end + 1), {
         status: 206,
         headers: {
           "Content-Range": `bytes ${start}-${end}/${fileSize}`,
@@ -61,10 +59,7 @@ export async function GET(
     }
   }
 
-  const stream = createReadStream(filePath);
-  const webStream = Readable.toWeb(stream) as ReadableStream;
-
-  return new Response(webStream, {
+  return new Response(buffer, {
     status: 200,
     headers: {
       "Content-Length": String(fileSize),

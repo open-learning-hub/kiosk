@@ -5,7 +5,7 @@
       "id": "e7b7e02b-af54-4b18-a5b3-87fe420f1088",
       "name": "Marketing Video",
       "type": "video",
-      "enabled": false,
+      "enabled": true,
       "duration": 5,
       "displayOrder": 1,
       "mediaFile": "sample-video.mp4",
