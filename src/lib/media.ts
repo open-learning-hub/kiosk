@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+
 import type { MediaFile } from "./types";
 
 const UPLOADS_DIR = path.join(process.cwd(), "data", "uploads");
@@ -90,6 +91,6 @@ export async function listUploads(): Promise<MediaFile[]> {
 
   return results.sort(
     (a, b) =>
-      new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+      new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,8 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MediaLibrary } from "./media-library";
 import type { PageConfig, PageType } from "@/lib/types";
+
+import { MediaLibrary } from "./media-library";
 
 interface PageEditorProps {
   page?: PageConfig | null;
@@ -44,7 +46,7 @@ export function PageEditor({
   const [url, setUrl] = useState(page?.url || "");
   const [videoLoop, setVideoLoop] = useState(page?.videoLoop ?? true);
   const [imageFit, setImageFit] = useState<"contain" | "cover">(
-    page?.imageFit || "contain"
+    page?.imageFit || "contain",
   );
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,7 +90,7 @@ export function PageEditor({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{page ? "Edit Page" : "Add Page"}</DialogTitle>
         </DialogHeader>
@@ -105,10 +107,7 @@ export function PageEditor({
 
           <div className="space-y-2">
             <Label>Type</Label>
-            <Select
-              value={type}
-              onValueChange={(v) => setType(v as PageType)}
-            >
+            <Select value={type} onValueChange={(v) => setType(v as PageType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -138,7 +137,7 @@ export function PageEditor({
           {(type === "video" || type === "image") && (
             <div className="space-y-2">
               <Label>Media File</Label>
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <Input
                   value={mediaFile}
                   onChange={(e) => setMediaFile(e.target.value)}
@@ -177,9 +176,7 @@ export function PageEditor({
               <Label>Image Fit</Label>
               <Select
                 value={imageFit}
-                onValueChange={(v) =>
-                  setImageFit(v as "contain" | "cover")
-                }
+                onValueChange={(v) => setImageFit(v as "contain" | "cover")}
               >
                 <SelectTrigger>
                   <SelectValue />

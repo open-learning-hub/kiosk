@@ -1,10 +1,11 @@
 "use client";
 
-import type { KioskConfig } from "@/lib/types";
-import { useKioskConfig } from "@/hooks/use-kiosk-config";
 import { useCycleTimer } from "@/hooks/use-cycle-timer";
-import { VideoPage } from "./video-page";
+import { useKioskConfig } from "@/hooks/use-kiosk-config";
+import type { KioskConfig } from "@/lib/types";
+
 import { ImagePage } from "./image-page";
+import { VideoPage } from "./video-page";
 import { WebsitePage } from "./website-page";
 
 interface KioskDisplayProps {
@@ -28,7 +29,7 @@ export function KioskDisplay({ initialConfig, singlePage }: KioskDisplayProps) {
           // Support ?page=A, ?page=B, ?page=C shortcuts
           (singlePage.toUpperCase() === "A" && p.displayOrder === 0) ||
           (singlePage.toUpperCase() === "B" && p.displayOrder === 1) ||
-          (singlePage.toUpperCase() === "C" && p.displayOrder === 2)
+          (singlePage.toUpperCase() === "C" && p.displayOrder === 2),
       )
     : null;
 
@@ -40,8 +41,8 @@ export function KioskDisplay({ initialConfig, singlePage }: KioskDisplayProps) {
 
   if (!activePage) {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <p className="text-white/30 text-2xl">No pages configured</p>
+      <div className="fixed inset-0 flex items-center justify-center bg-black">
+        <p className="text-2xl text-white/30">No pages configured</p>
       </div>
     );
   }

@@ -1,5 +1,5 @@
-import { getConfig } from "@/lib/config";
 import { KioskDisplay } from "@/components/kiosk/kiosk-display";
+import { getConfig } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 

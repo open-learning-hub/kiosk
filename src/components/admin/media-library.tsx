@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { MediaFile } from "@/lib/types";
+
 import { MediaUpload } from "./media-upload";
 
 interface MediaLibraryProps {
@@ -54,30 +56,30 @@ export function MediaLibrary({ onSelect, selectable }: MediaLibraryProps) {
       <MediaUpload onUploadComplete={refresh} />
 
       {files.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-muted-foreground py-8 text-center text-sm">
           No files uploaded yet
         </p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {files.map((file) => (
             <Card key={file.filename} className="overflow-hidden">
-              <div className="aspect-video bg-muted flex items-center justify-center">
+              <div className="bg-muted flex aspect-video items-center justify-center">
                 {isImage(file.mimeType) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={`/api/media/${encodeURIComponent(file.filename)}`}
                     alt={file.originalName}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="text-3xl">🎬</div>
                 )}
               </div>
-              <div className="p-2 space-y-1">
-                <p className="text-xs font-medium truncate">
+              <div className="space-y-1 p-2">
+                <p className="truncate text-xs font-medium">
                   {file.originalName}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {formatSize(file.size)}
                 </p>
                 <div className="flex gap-1">

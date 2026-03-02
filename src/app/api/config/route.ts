@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { getConfig, updateSettings } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to read config", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -23,7 +24,7 @@ export async function PUT(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update config", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

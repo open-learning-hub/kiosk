@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useCycleTimer } from "../use-cycle-timer";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { PageConfig } from "@/lib/types";
+
+import { useCycleTimer } from "../use-cycle-timer";
 
 function makePage(overrides: Partial<PageConfig> = {}): PageConfig {
   return {

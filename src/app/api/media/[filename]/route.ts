@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
+
 import { readFileSync, statSync } from "fs";
-import { getUploadPath, getMimeType, isAllowedFile } from "@/lib/media";
 import path from "path";
+
+import { getMimeType, getUploadPath, isAllowedFile } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ filename: string }> }
+  { params }: { params: Promise<{ filename: string }> },
 ) {
   const { filename } = await params;
 

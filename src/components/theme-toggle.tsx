@@ -1,7 +1,9 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+
 import { useTheme } from "next-themes";
+
 import { Button } from "@/components/ui/button";
 
 const emptySubscribe = () => () => {};
@@ -11,7 +13,7 @@ export function ThemeToggle() {
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
-    () => false
+    () => false,
   );
 
   if (!mounted) return null;

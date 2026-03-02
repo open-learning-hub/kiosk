@@ -12,10 +12,10 @@ export function VideoPage({ page }: VideoPageProps) {
     : "";
 
   return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-black">
       <video
         key={src}
-        className="w-full h-full object-contain"
+        className="h-full w-full object-contain"
         src={src}
         autoPlay
         loop={page.videoLoop !== false}

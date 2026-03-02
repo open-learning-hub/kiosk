@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { useKioskConfig } from "../use-kiosk-config";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { KioskConfig } from "@/lib/types";
+
+import { useKioskConfig } from "../use-kiosk-config";
 
 function makeConfig(overrides?: Partial<KioskConfig>): KioskConfig {
   return {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { saveUpload, listUploads, deleteUpload } from "@/lib/media";
+
+import { deleteUpload, listUploads, saveUpload } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to list uploads", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -21,10 +22,7 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     const mediaFile = await saveUpload(file);
@@ -32,7 +30,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to upload file", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -43,7 +41,7 @@ export async function DELETE(request: Request) {
     if (!filename) {
       return NextResponse.json(
         { error: "No filename provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const deleted = await deleteUpload(filename);
@@ -54,7 +52,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete file", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

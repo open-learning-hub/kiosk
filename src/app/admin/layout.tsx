@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AdminLayout({
@@ -7,7 +8,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <header className="border-b">
         <div className="container mx-auto flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-4">
@@ -15,7 +16,7 @@ export default function AdminLayout({
             <Link
               href="/"
               target="_blank"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground text-sm"
             >
               Open Kiosk →
             </Link>

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { getPage, updatePage, deletePage } from "@/lib/config";
+
+import { deletePage, getPage, updatePage } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   try {
@@ -17,14 +18,14 @@ export async function GET(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to get page", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   try {
@@ -37,14 +38,14 @@ export async function PUT(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update page", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   try {
@@ -56,7 +57,7 @@ export async function DELETE(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete page", details: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

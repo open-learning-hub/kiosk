@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCallback, useEffect, useState } from "react";
+
+import { toast } from "sonner";
+
+import { MediaLibrary } from "@/components/admin/media-library";
+import { PageEditor } from "@/components/admin/page-editor";
+import { PageList } from "@/components/admin/page-list";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageList } from "@/components/admin/page-list";
-import { PageEditor } from "@/components/admin/page-editor";
-import { MediaLibrary } from "@/components/admin/media-library";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { KioskConfig, PageConfig } from "@/lib/types";
-import { toast } from "sonner";
 
 export default function AdminPage() {
   const [config, setConfig] = useState<KioskConfig | null>(null);
@@ -90,9 +92,8 @@ export default function AdminPage() {
     refresh();
   }
 
-  const nextOrder = pages.length > 0
-    ? Math.max(...pages.map((p) => p.displayOrder)) + 1
-    : 0;
+  const nextOrder =
+    pages.length > 0 ? Math.max(...pages.map((p) => p.displayOrder)) + 1 : 0;
 
   return (
     <div className="space-y-6">
@@ -104,7 +105,7 @@ export default function AdminPage() {
         </TabsList>
 
         <TabsContent value="pages" className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Display Pages</h2>
             <Button
               onClick={() => {
@@ -164,7 +165,7 @@ export default function AdminPage() {
                     min={5}
                     defaultValue={config.settings.pollInterval}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     How often the kiosk display checks for config changes
                   </p>
                 </div>

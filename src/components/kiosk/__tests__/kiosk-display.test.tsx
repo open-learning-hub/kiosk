@@ -1,7 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { KioskDisplay } from "../kiosk-display";
+import { describe, expect, it, vi } from "vitest";
+
 import type { KioskConfig, PageConfig } from "@/lib/types";
+
+import { KioskDisplay } from "../kiosk-display";
 
 // Mock child components to isolate KioskDisplay logic
 vi.mock("../video-page", () => ({
@@ -87,24 +89,39 @@ describe("KioskDisplay", () => {
   });
 
   it("shows 'No pages configured' when all pages are disabled", () => {
-    const config = makeConfig([
-      makePage({ enabled: false }),
-    ]);
+    const config = makeConfig([makePage({ enabled: false })]);
     render(<KioskDisplay initialConfig={config} />);
     expect(screen.getByText("No pages configured")).toBeInTheDocument();
   });
 
   describe("singlePage mode", () => {
     const pages = [
-      makePage({ id: "vid-1", name: "Marketing Video", type: "video", displayOrder: 0 }),
-      makePage({ id: "img-1", name: "Product Photo", type: "image", displayOrder: 1 }),
-      makePage({ id: "web-1", name: "Wikipedia", type: "website", displayOrder: 2 }),
+      makePage({
+        id: "vid-1",
+        name: "Marketing Video",
+        type: "video",
+        displayOrder: 0,
+      }),
+      makePage({
+        id: "img-1",
+        name: "Product Photo",
+        type: "image",
+        displayOrder: 1,
+      }),
+      makePage({
+        id: "web-1",
+        name: "Wikipedia",
+        type: "website",
+        displayOrder: 2,
+      }),
     ];
 
     it("finds page by ID", () => {
       const config = makeConfig(pages);
       render(<KioskDisplay initialConfig={config} singlePage="img-1" />);
-      expect(screen.getByTestId("image-page")).toHaveTextContent("Product Photo");
+      expect(screen.getByTestId("image-page")).toHaveTextContent(
+        "Product Photo",
+      );
     });
 
     it("finds page by type", () => {
@@ -115,19 +132,31 @@ describe("KioskDisplay", () => {
 
     it("finds page by name (case-insensitive)", () => {
       const config = makeConfig(pages);
-      render(<KioskDisplay initialConfig={config} singlePage="marketing video" />);
-      expect(screen.getByTestId("video-page")).toHaveTextContent("Marketing Video");
+      render(
+        <KioskDisplay initialConfig={config} singlePage="marketing video" />,
+      );
+      expect(screen.getByTestId("video-page")).toHaveTextContent(
+        "Marketing Video",
+      );
     });
 
     it("supports A/B/C shortcuts", () => {
       const config = makeConfig(pages);
 
-      const { unmount } = render(<KioskDisplay initialConfig={config} singlePage="A" />);
-      expect(screen.getByTestId("video-page")).toHaveTextContent("Marketing Video");
+      const { unmount } = render(
+        <KioskDisplay initialConfig={config} singlePage="A" />,
+      );
+      expect(screen.getByTestId("video-page")).toHaveTextContent(
+        "Marketing Video",
+      );
       unmount();
 
-      const { unmount: unmount2 } = render(<KioskDisplay initialConfig={config} singlePage="B" />);
-      expect(screen.getByTestId("image-page")).toHaveTextContent("Product Photo");
+      const { unmount: unmount2 } = render(
+        <KioskDisplay initialConfig={config} singlePage="B" />,
+      );
+      expect(screen.getByTestId("image-page")).toHaveTextContent(
+        "Product Photo",
+      );
       unmount2();
 
       render(<KioskDisplay initialConfig={config} singlePage="C" />);

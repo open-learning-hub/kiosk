@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -56,12 +57,12 @@ export function MediaUpload({ onUploadComplete }: MediaUploadProps) {
       }}
     >
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {uploading
             ? "Uploading..."
             : "Drag & drop files here, or click to browse"}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Supports: MP4, WebM, JPG, PNG, GIF, WebP
         </p>
         <Button

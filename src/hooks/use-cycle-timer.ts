@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import type { PageConfig } from "@/lib/types";
 
 export function useCycleTimer(pages: PageConfig[]) {
@@ -12,7 +13,7 @@ export function useCycleTimer(pages: PageConfig[]) {
       pages
         .filter((p) => p.enabled)
         .sort((a, b) => a.displayOrder - b.displayOrder),
-    [pages]
+    [pages],
   );
 
   const advance = useCallback(() => {

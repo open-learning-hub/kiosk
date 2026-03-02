@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { KioskConfig, PageConfig } from "../types";
 
 const mockMkdir = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
 const mockReadFile = vi.fn();
-const mockWriteFile = vi
-  .fn<() => Promise<void>>()
-  .mockResolvedValue(undefined);
+const mockWriteFile = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
 const mockRandomUUID = vi.fn().mockReturnValue("test-uuid-1234");
 
 vi.mock("fs", async () => {
@@ -107,7 +106,7 @@ describe("config", () => {
       expect(mockWriteFile).toHaveBeenCalledWith(
         expect.stringContaining("config.json"),
         JSON.stringify(cfg, null, 2),
-        "utf-8"
+        "utf-8",
       );
     });
   });
@@ -191,7 +190,7 @@ describe("config", () => {
       expect(result).toBe(true);
 
       const savedConfig = JSON.parse(
-        mockWriteFile.mock.calls[0][1] as string
+        mockWriteFile.mock.calls[0][1] as string,
       ) as KioskConfig;
       expect(savedConfig.pages).toHaveLength(2);
       expect(savedConfig.pages[0].displayOrder).toBe(0);
@@ -214,7 +213,7 @@ describe("config", () => {
       expect(result).toBe(true);
 
       const savedConfig = JSON.parse(
-        mockWriteFile.mock.calls[0][1] as string
+        mockWriteFile.mock.calls[0][1] as string,
       ) as KioskConfig;
       const pageA = savedConfig.pages.find((p) => p.id === "page-1")!;
       const pageB = savedConfig.pages.find((p) => p.id === "page-3")!;

@@ -105,7 +105,10 @@ export function PageList({
         ))}
         {sorted.length === 0 && (
           <TableRow>
-            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+            <TableCell
+              colSpan={6}
+              className="text-muted-foreground py-8 text-center"
+            >
               No pages configured. Click &quot;Add Page&quot; to get started.
             </TableCell>
           </TableRow>
