@@ -1,6 +1,7 @@
+import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
-import { randomUUID } from "crypto";
+
 import type { KioskConfig, PageConfig } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -79,7 +80,7 @@ export async function getPage(id: string): Promise<PageConfig | undefined> {
 }
 
 export async function addPage(
-  page: Omit<PageConfig, "id">
+  page: Omit<PageConfig, "id">,
 ): Promise<PageConfig> {
   const config = await getConfig();
   const newPage: PageConfig = { ...page, id: randomUUID() };
@@ -90,7 +91,7 @@ export async function addPage(
 
 export async function updatePage(
   id: string,
-  updates: Partial<PageConfig>
+  updates: Partial<PageConfig>,
 ): Promise<PageConfig | null> {
   const config = await getConfig();
   const idx = config.pages.findIndex((p) => p.id === id);
@@ -115,7 +116,7 @@ export async function deletePage(id: string): Promise<boolean> {
 
 export async function swapPageOrder(
   idA: string,
-  idB: string
+  idB: string,
 ): Promise<boolean> {
   const config = await getConfig();
   const pageA = config.pages.find((p) => p.id === idA);
@@ -129,7 +130,7 @@ export async function swapPageOrder(
 }
 
 export async function updateSettings(
-  settings: Partial<KioskConfig["settings"]>
+  settings: Partial<KioskConfig["settings"]>,
 ): Promise<KioskConfig["settings"]> {
   const config = await getConfig();
   config.settings = { ...config.settings, ...settings };
