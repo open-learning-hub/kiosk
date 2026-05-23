@@ -82,12 +82,12 @@ export function MediaLibrary({ onSelect, selectable }: MediaLibraryProps) {
                 <p className="text-muted-foreground text-xs">
                   {formatSize(file.size)}
                 </p>
-                <div className="flex gap-1">
+                <div className="flex justify-center gap-1">
                   {selectable && onSelect && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs"
+                      className="text-xs"
                       onClick={() => onSelect(file.filename)}
                     >
                       Select

@@ -169,7 +169,9 @@ export default function AdminPage() {
                     How often the kiosk display checks for config changes
                   </p>
                 </div>
-                <Button type="submit">Save Settings</Button>
+                <div className="flex justify-center">
+                  <Button type="submit">Save Settings</Button>
+                </div>
               </form>
             </CardContent>
           </Card>
