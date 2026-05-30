@@ -1,0 +1,8 @@
+[Unit]
+Description=Kiosk scheduled power-off check
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=INSTALL_DIR=__INSTALL_DIR__
+ExecStart=__INSTALL_DIR__/deploy/scripts/power-schedule.sh

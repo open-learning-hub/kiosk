@@ -65,6 +65,13 @@ function makeConfig(overrides?: Partial<KioskConfig>): KioskConfig {
       defaultDuration: 15,
       pollInterval: 30,
     },
+    schedule: {
+      enabled: false,
+      onTime: "09:00",
+      offTime: "17:00",
+      wakeLeadMinutes: 1,
+      daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    },
     ...overrides,
   };
 }
@@ -94,7 +101,28 @@ describe("config", () => {
       expect(result.version).toBe(1);
       expect(result.pages).toHaveLength(3);
       expect(result.settings.defaultDuration).toBe(15);
+      expect(result.schedule.enabled).toBe(false);
       expect(mockWriteFile).toHaveBeenCalled();
+    });
+
+    it("merges default schedule when missing from file", async () => {
+      const cfg = makeConfig();
+      mockReadFile.mockResolvedValueOnce(
+        JSON.stringify({
+          version: cfg.version,
+          pages: cfg.pages,
+          settings: cfg.settings,
+        }),
+      );
+
+      const result = await config.getConfig();
+      expect(result.schedule).toEqual({
+        enabled: false,
+        onTime: "09:00",
+        offTime: "17:00",
+        wakeLeadMinutes: 1,
+        daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+      });
     });
   });
 
@@ -236,6 +264,59 @@ describe("config", () => {
       const result = await config.updateSettings({ pollInterval: 60 });
       expect(result.pollInterval).toBe(60);
       expect(result.defaultDuration).toBe(15);
+    });
+  });
+
+  describe("updateSchedule", () => {
+    it("merges partial schedule and saves", async () => {
+      mockReadFile.mockResolvedValueOnce(JSON.stringify(makeConfig()));
+
+      const result = await config.updateSchedule({
+        enabled: true,
+        onTime: "08:00",
+      });
+      expect(result.enabled).toBe(true);
+      expect(result.onTime).toBe("08:00");
+      expect(result.offTime).toBe("17:00");
+    });
+
+    it("updates daysOfWeek and sorts", async () => {
+      mockReadFile.mockResolvedValueOnce(JSON.stringify(makeConfig()));
+
+      const result = await config.updateSchedule({
+        daysOfWeek: [5, 3, 1],
+      });
+      expect(result.daysOfWeek).toEqual([1, 3, 5]);
+    });
+
+    it("rejects empty daysOfWeek when enabled", async () => {
+      mockReadFile.mockResolvedValueOnce(
+        JSON.stringify(
+          makeConfig({
+            schedule: {
+              enabled: true,
+              onTime: "09:00",
+              offTime: "17:00",
+              wakeLeadMinutes: 1,
+              daysOfWeek: [1, 2, 3, 4, 5],
+            },
+          }),
+        ),
+      );
+
+      await expect(config.updateSchedule({ daysOfWeek: [] })).rejects.toThrow(
+        /At least one day/,
+      );
+    });
+  });
+
+  describe("validateScheduleUpdate", () => {
+    it("rejects invalid weekday values", () => {
+      const cfg = makeConfig();
+      const error = config.validateScheduleUpdate(cfg.schedule, {
+        daysOfWeek: [0, 8] as unknown as typeof cfg.schedule.daysOfWeek,
+      });
+      expect(error).toMatch(/1–7/);
     });
   });
 });

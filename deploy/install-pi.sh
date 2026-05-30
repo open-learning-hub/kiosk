@@ -29,7 +29,7 @@ else
   CHROMIUM_PKG="chromium-browser"
 fi
 
-sudo apt-get install -y curl git "$CHROMIUM_PKG"
+sudo apt-get install -y curl git jq "$CHROMIUM_PKG"
 
 if ! command -v node >/dev/null 2>&1 || [ "$(node -v | cut -d. -f1 | tr -d v)" -lt 20 ]; then
   echo ">> Installing Node.js 20..."
@@ -64,6 +64,7 @@ fi
 echo ">> Making deploy scripts executable..."
 chmod +x deploy/scripts/wait-for-app.sh
 chmod +x deploy/scripts/start-kiosk-browser.sh
+chmod +x deploy/scripts/power-schedule.sh
 chmod +x deploy/copy-standalone.sh
 
 KIOSK_LAUNCHER="$INSTALL_DIR/deploy/scripts/start-kiosk-browser.sh"
@@ -134,6 +135,40 @@ if ! sudo systemctl is-active --quiet kiosk-app; then
   echo "WARN: kiosk-app is not active. Check: journalctl -u kiosk-app -n 30" >&2
 fi
 
+echo ">> Configuring Pi 5 low-power halt and RTC wake (EEPROM)..."
+if command -v rpi-eeprom-config >/dev/null 2>&1; then
+  EEPROM_TMP="$(mktemp)"
+  sudo rpi-eeprom-config --out "$EEPROM_TMP"
+  if grep -q '^POWER_OFF_ON_HALT=' "$EEPROM_TMP"; then
+    sed -i 's/^POWER_OFF_ON_HALT=.*/POWER_OFF_ON_HALT=1/' "$EEPROM_TMP"
+  else
+    echo 'POWER_OFF_ON_HALT=1' >>"$EEPROM_TMP"
+  fi
+  if grep -q '^WAKE_ON_GPIO=' "$EEPROM_TMP"; then
+    sed -i 's/^WAKE_ON_GPIO=.*/WAKE_ON_GPIO=0/' "$EEPROM_TMP"
+  else
+    echo 'WAKE_ON_GPIO=0' >>"$EEPROM_TMP"
+  fi
+  sudo rpi-eeprom-config --apply "$EEPROM_TMP"
+  rm -f "$EEPROM_TMP"
+  echo "   POWER_OFF_ON_HALT=1, WAKE_ON_GPIO=0 applied (reboot may be required)"
+else
+  echo "WARN: rpi-eeprom-config not found; skip EEPROM power settings" >&2
+fi
+
+echo ">> Enabling NTP for accurate RTC wake times..."
+sudo timedatectl set-ntp true 2>/dev/null || true
+
+echo ">> Installing scheduled power timer..."
+sudo sed \
+  -e "s|__INSTALL_DIR__|$INSTALL_DIR|g" \
+  deploy/systemd/kiosk-power.service \
+  | sudo tee /etc/systemd/system/kiosk-power.service >/dev/null
+sudo cp deploy/systemd/kiosk-power.timer /etc/systemd/system/kiosk-power.timer
+sudo systemctl daemon-reload
+sudo systemctl enable kiosk-power.timer
+sudo systemctl start kiosk-power.timer || true
+
 echo ">> Ensuring data directory exists..."
 mkdir -p "$INSTALL_DIR/data/uploads"
 
@@ -142,6 +177,9 @@ echo "Install complete."
 echo "  Display:  http://127.0.0.1:3000"
 echo "  Admin:    http://$(hostname -I | awk '{print $1}'):3000/admin"
 echo "  Service:  sudo systemctl status kiosk-app"
+echo "  Power:    sudo systemctl status kiosk-power.timer"
+echo ""
+echo "Scheduled power: configure in Admin → Settings → Power Schedule (Pi 5)."
 echo ""
 echo "After reboot, verify browser autostart:"
 echo "  cat ~/.config/autostart/kiosk-browser.desktop"

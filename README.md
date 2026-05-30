@@ -117,6 +117,36 @@ tail -20 ~/.local/share/kiosk/browser.log
 
 On autologin, GNOME Keyring stays locked. Install sets `--password-store=basic` in `~/.config/chromium-flags.conf` and `/etc/chromium.d/99-kiosk-flags` (or `chromium-browser/customizations`) so menu and autostart launches avoid the prompt. Re-run `bash deploy/install-pi.sh` after pulling updates. For kiosk mode, rely on autostart rather than the desktop menu icon.
 
+### Scheduled power (Pi 5)
+
+The kiosk can run on a **daily on-window** only: outside that window the Pi powers fully off and the built-in RTC wakes it for the next start time (cold boot). Configure in **Admin → Settings → Power Schedule**.
+
+| Setting                | Purpose                                                         |
+| ---------------------- | --------------------------------------------------------------- |
+| Enable scheduled power | Turn the schedule on/off                                        |
+| On / Off time          | Local 24h window when the kiosk should run (on enabled days)    |
+| Days of week           | Mon–Sun toggles; disabled days = Pi powered off all day         |
+| Wake lead              | Minutes before on time to start boot (~30s boot; default 1 min) |
+
+**Requirements:** Raspberry Pi 5, mains power (USB-C), `deploy/install-pi.sh` (installs `kiosk-power.timer`, EEPROM `POWER_OFF_ON_HALT=1`, and `jq`). The Pi must stay plugged in; RTC wake uses the onboard clock.
+
+**RTC battery:** Optional rechargeable cell on the J5 connector keeps time if mains is lost. Without it, a power outage resets the clock until NTP syncs on next boot.
+
+**Disable without uninstalling:**
+
+```bash
+# Admin UI: turn off "Enable scheduled power", or:
+sudo systemctl disable --now kiosk-power.timer
+```
+
+**Verify on the Pi:**
+
+```bash
+sudo systemctl status kiosk-power.timer
+journalctl -u kiosk-power -n 20
+cat /sys/class/rtc/rtc0/wakealarm   # Unix epoch when a wake is scheduled
+```
+
 ### Security note
 
 The admin UI has no authentication. If `HOSTNAME=0.0.0.0`, restrict port 3000 to your LAN with a firewall (e.g. `ufw allow from 192.168.0.0/24 to any port 3000`).

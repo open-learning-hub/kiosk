@@ -11,17 +11,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { KioskConfig, PageConfig } from "@/lib/types";
+import type { KioskConfig, PageConfig, Weekday } from "@/lib/types";
+import { ALL_WEEKDAYS } from "@/lib/types";
+
+const WEEKDAY_OPTIONS: { label: string; value: Weekday }[] = [
+  { label: "Mon", value: 1 },
+  { label: "Tue", value: 2 },
+  { label: "Wed", value: 3 },
+  { label: "Thu", value: 4 },
+  { label: "Fri", value: 5 },
+  { label: "Sat", value: 6 },
+  { label: "Sun", value: 7 },
+];
 
 export default function AdminPage() {
   const [config, setConfig] = useState<KioskConfig | null>(null);
   const [editingPage, setEditingPage] = useState<PageConfig | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<Weekday[]>([
+    ...ALL_WEEKDAYS,
+  ]);
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/config");
-    if (res.ok) setConfig(await res.json());
+    if (res.ok) {
+      const data = await res.json();
+      setConfig(data);
+      setScheduleEnabled(data.schedule?.enabled ?? false);
+      setSelectedDays(data.schedule?.daysOfWeek ?? [...ALL_WEEKDAYS]);
+    }
   }, []);
 
   useEffect(() => {
@@ -29,7 +50,11 @@ export default function AdminPage() {
     fetch("/api/config")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && !cancelled) setConfig(data);
+        if (data && !cancelled) {
+          setConfig(data);
+          setScheduleEnabled(data.schedule?.enabled ?? false);
+          setSelectedDays(data.schedule?.daysOfWeek ?? [...ALL_WEEKDAYS]);
+        }
       });
     return () => {
       cancelled = true;
@@ -89,6 +114,47 @@ export default function AdminPage() {
       }),
     });
     toast.success("Settings saved");
+    refresh();
+  }
+
+  function toggleDay(day: Weekday) {
+    setSelectedDays((prev) => {
+      const next = prev.includes(day)
+        ? prev.filter((d) => d !== day)
+        : [...prev, day];
+      return next.sort((a, b) => a - b) as Weekday[];
+    });
+  }
+
+  async function handleSaveSchedule(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (scheduleEnabled && selectedDays.length === 0) {
+      toast.error("Select at least one day when scheduled power is enabled");
+      return;
+    }
+    const form = new FormData(e.currentTarget);
+    const res = await fetch("/api/config", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        schedule: {
+          enabled: scheduleEnabled,
+          onTime: (form.get("onTime") as string) || "09:00",
+          offTime: (form.get("offTime") as string) || "17:00",
+          wakeLeadMinutes:
+            parseInt(form.get("wakeLeadMinutes") as string, 10) || 1,
+          daysOfWeek: selectedDays,
+        },
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast.error(
+        (data as { error?: string }).error ?? "Failed to save power schedule",
+      );
+      return;
+    }
+    toast.success("Power schedule saved");
     refresh();
   }
 
@@ -171,6 +237,100 @@ export default function AdminPage() {
                 </div>
                 <div className="flex justify-center">
                   <Button type="submit">Save Settings</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Power Schedule</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveSchedule} className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="scheduleEnabled">
+                      Enable scheduled power
+                    </Label>
+                    <p className="text-muted-foreground text-xs">
+                      Pi powers fully off outside this window and wakes via the
+                      RTC (Pi 5, mains connected).
+                    </p>
+                  </div>
+                  <Switch
+                    id="scheduleEnabled"
+                    checked={scheduleEnabled}
+                    onCheckedChange={setScheduleEnabled}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="onTime">On time</Label>
+                    <Input
+                      id="onTime"
+                      name="onTime"
+                      type="time"
+                      defaultValue={config.schedule.onTime}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="offTime">Off time</Label>
+                    <Input
+                      id="offTime"
+                      name="offTime"
+                      type="time"
+                      defaultValue={config.schedule.offTime}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Days of week</Label>
+                  <p className="text-muted-foreground text-xs">
+                    Disabled days keep the Pi powered off all day.
+                  </p>
+                  <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
+                    {WEEKDAY_OPTIONS.map(({ label, value }) => (
+                      <div
+                        key={value}
+                        className="flex flex-col items-center gap-1.5"
+                      >
+                        <Switch
+                          id={`day-${value}`}
+                          checked={selectedDays.includes(value)}
+                          onCheckedChange={() => toggleDay(value)}
+                        />
+                        <Label
+                          htmlFor={`day-${value}`}
+                          className="text-muted-foreground text-xs font-normal"
+                        >
+                          {label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wakeLeadMinutes">
+                    Wake lead (minutes before on time)
+                  </Label>
+                  <Input
+                    id="wakeLeadMinutes"
+                    name="wakeLeadMinutes"
+                    type="number"
+                    min={0}
+                    max={60}
+                    defaultValue={config.schedule.wakeLeadMinutes}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Cold boot takes ~30s; wake early so the kiosk is ready by on
+                    time.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Button type="submit">Save Power Schedule</Button>
                 </div>
               </form>
             </CardContent>

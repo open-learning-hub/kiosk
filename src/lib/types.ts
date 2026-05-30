@@ -13,6 +13,18 @@ export interface PageConfig {
   imageFit?: "contain" | "cover";
 }
 
+export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export const ALL_WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
+
+export interface PowerSchedule {
+  enabled: boolean;
+  onTime: string;
+  offTime: string;
+  wakeLeadMinutes: number;
+  daysOfWeek: Weekday[];
+}
+
 export interface KioskConfig {
   version: number;
   pages: PageConfig[];
@@ -20,6 +32,7 @@ export interface KioskConfig {
     defaultDuration: number;
     pollInterval: number;
   };
+  schedule: PowerSchedule;
 }
 
 export interface MediaFile {

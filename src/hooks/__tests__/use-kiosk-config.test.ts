@@ -13,6 +13,13 @@ function makeConfig(overrides?: Partial<KioskConfig>): KioskConfig {
       defaultDuration: 15,
       pollInterval: 10,
     },
+    schedule: {
+      enabled: false,
+      onTime: "09:00",
+      offTime: "17:00",
+      wakeLeadMinutes: 1,
+      daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    },
     ...overrides,
   };
 }

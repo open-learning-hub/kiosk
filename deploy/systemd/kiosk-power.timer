@@ -1,0 +1,9 @@
+[Unit]
+Description=Check kiosk power schedule every minute
+
+[Timer]
+OnCalendar=*:0/1
+Persistent=true
+
+[Install]
+WantedBy=timers.target

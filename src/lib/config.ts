@@ -2,10 +2,64 @@ import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
-import type { KioskConfig, PageConfig } from "./types";
+import type { KioskConfig, PageConfig, PowerSchedule, Weekday } from "./types";
+import { ALL_WEEKDAYS } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const CONFIG_PATH = path.join(DATA_DIR, "config.json");
+
+export { ALL_WEEKDAYS };
+
+export function defaultSchedule(): PowerSchedule {
+  return {
+    enabled: false,
+    onTime: "09:00",
+    offTime: "17:00",
+    wakeLeadMinutes: 1,
+    daysOfWeek: [...ALL_WEEKDAYS],
+  };
+}
+
+function parseDaysOfWeek(days: unknown): Weekday[] {
+  if (!Array.isArray(days)) {
+    return [];
+  }
+  return [
+    ...new Set(
+      days
+        .map((d) => Number(d))
+        .filter((d): d is Weekday => Number.isInteger(d) && d >= 1 && d <= 7),
+    ),
+  ].sort((a, b) => a - b);
+}
+
+export function normalizeDaysOfWeek(days: unknown): Weekday[] {
+  const parsed = parseDaysOfWeek(days);
+  return parsed.length > 0 ? parsed : [...ALL_WEEKDAYS];
+}
+
+export function validateScheduleUpdate(
+  current: PowerSchedule,
+  updates: Partial<PowerSchedule>,
+): string | null {
+  const merged = { ...current, ...updates };
+  if (updates.daysOfWeek !== undefined) {
+    if (!Array.isArray(updates.daysOfWeek)) {
+      return "daysOfWeek must be an array";
+    }
+    const invalid = updates.daysOfWeek.some(
+      (d) => !Number.isInteger(Number(d)) || Number(d) < 1 || Number(d) > 7,
+    );
+    if (invalid) {
+      return "daysOfWeek must contain integers 1–7 (Mon–Sun)";
+    }
+    const parsed = parseDaysOfWeek(updates.daysOfWeek);
+    if (merged.enabled && parsed.length === 0) {
+      return "At least one day must be enabled when scheduled power is on";
+    }
+  }
+  return null;
+}
 
 function defaultConfig(): KioskConfig {
   return {
@@ -45,6 +99,25 @@ function defaultConfig(): KioskConfig {
       defaultDuration: 15,
       pollInterval: 30,
     },
+    schedule: defaultSchedule(),
+  };
+}
+
+function normalizeConfig(
+  raw: Partial<KioskConfig> & { pages?: PageConfig[] },
+): KioskConfig {
+  const base = defaultConfig();
+  const scheduleDefaults = defaultSchedule();
+  const schedule = {
+    ...scheduleDefaults,
+    ...raw.schedule,
+    daysOfWeek: normalizeDaysOfWeek(raw.schedule?.daysOfWeek),
+  };
+  return {
+    version: raw.version ?? base.version,
+    pages: raw.pages ?? base.pages,
+    settings: { ...base.settings, ...raw.settings },
+    schedule,
   };
 }
 
@@ -56,7 +129,7 @@ export async function getConfig(): Promise<KioskConfig> {
   await ensureDataDir();
   try {
     const raw = await fs.readFile(CONFIG_PATH, "utf-8");
-    return JSON.parse(raw) as KioskConfig;
+    return normalizeConfig(JSON.parse(raw) as Partial<KioskConfig>);
   } catch {
     const config = defaultConfig();
     await saveConfig(config);
@@ -136,4 +209,21 @@ export async function updateSettings(
   config.settings = { ...config.settings, ...settings };
   await saveConfig(config);
   return config.settings;
+}
+
+export async function updateSchedule(
+  schedule: Partial<PowerSchedule>,
+): Promise<PowerSchedule> {
+  const config = await getConfig();
+  const error = validateScheduleUpdate(config.schedule, schedule);
+  if (error) {
+    throw new Error(error);
+  }
+  const merged = { ...config.schedule, ...schedule };
+  if (schedule.daysOfWeek !== undefined) {
+    merged.daysOfWeek = parseDaysOfWeek(schedule.daysOfWeek);
+  }
+  config.schedule = merged;
+  await saveConfig(config);
+  return config.schedule;
 }
