@@ -95,16 +95,27 @@ curl http://127.0.0.1:3000/api/health
 
 - Confirm autologin: `sudo raspi-config` → System Options → Boot / Auto Login → Desktop Autologin
 - Check which compositor is running: `echo $XDG_SESSION_TYPE` and `ps -e | grep -Ei 'labwc|wayfire|lxsession'`
-- Verify autostart for your compositor (re-run `bash deploy/install-pi.sh` to refresh all):
+- Verify autostart (re-run `bash deploy/install-pi.sh` to refresh):
+  - XDG (primary on Pi 5 labwc): `~/.config/autostart/kiosk-browser.desktop`
   - labwc: `~/.config/labwc/autostart`
   - Wayfire: `~/.config/wayfire.ini` → `[autostart]` section
   - LXDE/X11: `~/.config/lxsession/LXDE-pi/autostart`
-- Run the browser script manually: `~/kiosk/deploy/scripts/start-kiosk-browser.sh`
+- Check launcher log: `tail -30 ~/.local/share/kiosk/browser.log`
+- Run the browser script manually from your repo: `<install-dir>/deploy/scripts/start-kiosk-browser.sh`
 - On Bookworm, install `chromium` (not `chromium-browser`): `sudo apt-get install -y chromium`
+
+Quick validation after install + reboot:
+
+```bash
+systemctl is-active kiosk-app && curl -sf http://127.0.0.1:3000/api/health
+cat ~/.config/autostart/kiosk-browser.desktop
+pgrep -a chromium
+tail -20 ~/.local/share/kiosk/browser.log
+```
 
 **"Unlock Keyring / Authentication required" dialog**
 
-Chromium may prompt for the GNOME keyring on autologin. The kiosk launcher passes `--password-store=basic` to avoid this. If you still see the dialog, re-run `bash deploy/install-pi.sh` (or pull latest and restart the browser script) so the updated flags are used.
+On autologin, GNOME Keyring stays locked. Install sets `--password-store=basic` in `~/.config/chromium-flags.conf` and `/etc/chromium.d/99-kiosk-flags` (or `chromium-browser/customizations`) so menu and autostart launches avoid the prompt. Re-run `bash deploy/install-pi.sh` after pulling updates. For kiosk mode, rely on autostart rather than the desktop menu icon.
 
 ### Security note
 

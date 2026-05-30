@@ -1,0 +1,2 @@
+# Kiosk: avoid GNOME keyring unlock prompt on autologin
+export CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --password-store=basic"

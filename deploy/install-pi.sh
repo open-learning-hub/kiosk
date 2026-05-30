@@ -72,11 +72,31 @@ chmod +x "$KIOSK_LAUNCHER"
 echo ">> Configuring desktop autologin..."
 sudo raspi-config nonint do_boot_behaviour B4 || true
 
-echo ">> Installing desktop autostart (labwc, Wayfire, LXDE)..."
+KIOSK_LOG_DIR="$HOME/.local/share/kiosk"
+mkdir -p "$KIOSK_LOG_DIR"
+
+echo ">> Installing Chromium flags (keyring)..."
+mkdir -p "$HOME/.config"
+if ! grep -qF 'password-store=basic' "$HOME/.config/chromium-flags.conf" 2>/dev/null; then
+  echo '--password-store=basic' >>"$HOME/.config/chromium-flags.conf"
+fi
+if [ -d /etc/chromium.d ]; then
+  sudo cp deploy/chromium/99-kiosk-flags /etc/chromium.d/99-kiosk-flags
+elif [ -d /etc/chromium-browser/customizations ]; then
+  sudo cp deploy/chromium/99-kiosk-flags /etc/chromium-browser/customizations/99-kiosk-flags
+else
+  echo "WARN: No /etc/chromium.d or customizations dir; using ~/.config/chromium-flags.conf only" >&2
+fi
+
+echo ">> Installing desktop autostart (XDG, labwc, Wayfire, LXDE)..."
+mkdir -p "$HOME/.config/autostart"
+sed "s|__KIOSK_LAUNCHER__|$KIOSK_LAUNCHER|g" deploy/desktop/kiosk-browser.desktop \
+  >"$HOME/.config/autostart/kiosk-browser.desktop"
+
 mkdir -p "$HOME/.config/labwc"
 LABWC_AUTOSTART="$HOME/.config/labwc/autostart"
 if ! grep -qF "$KIOSK_LAUNCHER" "$LABWC_AUTOSTART" 2>/dev/null; then
-  echo "\"$KIOSK_LAUNCHER\" &" >>"$LABWC_AUTOSTART"
+  echo "$KIOSK_LAUNCHER &" >>"$LABWC_AUTOSTART"
 fi
 
 mkdir -p "$HOME/.config/lxsession/LXDE-pi"
@@ -122,5 +142,10 @@ echo "Install complete."
 echo "  Display:  http://127.0.0.1:3000"
 echo "  Admin:    http://$(hostname -I | awk '{print $1}'):3000/admin"
 echo "  Service:  sudo systemctl status kiosk-app"
+echo ""
+echo "After reboot, verify browser autostart:"
+echo "  cat ~/.config/autostart/kiosk-browser.desktop"
+echo "  cat ~/.config/labwc/autostart"
+echo "  tail ~/.local/share/kiosk/browser.log"
 echo ""
 echo "Reboot to start kiosk mode: sudo reboot"

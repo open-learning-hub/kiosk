@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Kiosk Browser
+Comment=Fullscreen kiosk display
+Exec=__KIOSK_LAUNCHER__
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=10
