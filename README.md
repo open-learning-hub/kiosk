@@ -76,6 +76,15 @@ sudo systemctl status kiosk-app
 journalctl -u kiosk-app -f
 ```
 
+**`status=217/USER` / "Failed to determine user credentials"**
+
+The systemd unit is configured for a user that does not exist on this Pi (e.g. `User=pi` when your account is `kiosk-talisman`). Re-run install from the repo directory so the service is regenerated for the current user:
+
+```bash
+bash deploy/install-pi.sh
+sudo systemctl status kiosk-app
+```
+
 **App not ready**
 
 ```bash

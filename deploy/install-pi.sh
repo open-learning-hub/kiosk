@@ -2,13 +2,14 @@
 # One-time Raspberry Pi setup for kiosk mode.
 set -e
 
-KIOSK_USER="${KIOSK_USER:-pi}"
-
 if [ "$(id -u)" -eq 0 ]; then
-  echo "Run this script as the $KIOSK_USER user (not root)." >&2
+  echo "Run this script as your kiosk user (not root)." >&2
   echo "Example: bash deploy/install-pi.sh" >&2
   exit 1
 fi
+
+KIOSK_USER="${KIOSK_USER:-$(id -un)}"
+KIOSK_GROUP="${KIOSK_GROUP:-$(id -gn)}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_DIR="${INSTALL_DIR:-$ROOT_DIR}"
@@ -16,6 +17,7 @@ cd "$ROOT_DIR"
 
 echo "=== Kiosk Pi install ==="
 echo "Install directory: $INSTALL_DIR"
+echo "Service user:      $KIOSK_USER ($KIOSK_GROUP)"
 
 echo ">> Installing system packages..."
 sudo apt-get update
@@ -64,22 +66,18 @@ chmod +x deploy/scripts/wait-for-app.sh
 chmod +x deploy/scripts/start-kiosk-browser.sh
 chmod +x deploy/copy-standalone.sh
 
-echo ">> Installing systemd service..."
-sudo sed "s|/home/pi/kiosk|$INSTALL_DIR|g" deploy/systemd/kiosk-app.service \
-  | sudo tee /etc/systemd/system/kiosk-app.service >/dev/null
-sudo systemctl daemon-reload
-sudo systemctl enable kiosk-app
-sudo systemctl restart kiosk-app
+KIOSK_LAUNCHER="$INSTALL_DIR/deploy/scripts/start-kiosk-browser.sh"
+chmod +x "$KIOSK_LAUNCHER"
 
 echo ">> Configuring desktop autologin..."
 sudo raspi-config nonint do_boot_behaviour B4 || true
 
-KIOSK_LAUNCHER="$INSTALL_DIR/deploy/scripts/start-kiosk-browser.sh"
-chmod +x "$KIOSK_LAUNCHER"
-
 echo ">> Installing desktop autostart (labwc, Wayfire, LXDE)..."
 mkdir -p "$HOME/.config/labwc"
-sed "s|/home/pi/kiosk|$INSTALL_DIR|g" deploy/desktop/labwc-autostart >"$HOME/.config/labwc/autostart"
+LABWC_AUTOSTART="$HOME/.config/labwc/autostart"
+if ! grep -qF "$KIOSK_LAUNCHER" "$LABWC_AUTOSTART" 2>/dev/null; then
+  echo "\"$KIOSK_LAUNCHER\" &" >>"$LABWC_AUTOSTART"
+fi
 
 mkdir -p "$HOME/.config/lxsession/LXDE-pi"
 LXDE_AUTOSTART="$HOME/.config/lxsession/LXDE-pi/autostart"
@@ -100,6 +98,20 @@ if ! grep -qF "$KIOSK_LAUNCHER" "$WAYFIRE_INI" 2>/dev/null; then
 kiosk = $KIOSK_LAUNCHER
 EOF
   fi
+fi
+
+echo ">> Installing systemd service..."
+sudo sed \
+  -e "s|__INSTALL_DIR__|$INSTALL_DIR|g" \
+  -e "s|__KIOSK_USER__|$KIOSK_USER|g" \
+  -e "s|__KIOSK_GROUP__|$KIOSK_GROUP|g" \
+  deploy/systemd/kiosk-app.service \
+  | sudo tee /etc/systemd/system/kiosk-app.service >/dev/null
+sudo systemctl daemon-reload
+sudo systemctl enable kiosk-app
+sudo systemctl restart kiosk-app || true
+if ! sudo systemctl is-active --quiet kiosk-app; then
+  echo "WARN: kiosk-app is not active. Check: journalctl -u kiosk-app -n 30" >&2
 fi
 
 echo ">> Ensuring data directory exists..."
