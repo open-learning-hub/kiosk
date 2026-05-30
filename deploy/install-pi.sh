@@ -137,20 +137,21 @@ fi
 
 echo ">> Configuring Pi 5 low-power halt and RTC wake (EEPROM)..."
 if command -v rpi-eeprom-config >/dev/null 2>&1; then
-  EEPROM_TMP="$(mktemp)"
+  # Temp file must be root-owned: rpi-eeprom-config --out runs as root via sudo.
+  EEPROM_TMP="$(sudo mktemp)"
   sudo rpi-eeprom-config --out "$EEPROM_TMP"
-  if grep -q '^POWER_OFF_ON_HALT=' "$EEPROM_TMP"; then
-    sed -i 's/^POWER_OFF_ON_HALT=.*/POWER_OFF_ON_HALT=1/' "$EEPROM_TMP"
+  if sudo grep -q '^POWER_OFF_ON_HALT=' "$EEPROM_TMP"; then
+    sudo sed -i 's/^POWER_OFF_ON_HALT=.*/POWER_OFF_ON_HALT=1/' "$EEPROM_TMP"
   else
-    echo 'POWER_OFF_ON_HALT=1' >>"$EEPROM_TMP"
+    echo 'POWER_OFF_ON_HALT=1' | sudo tee -a "$EEPROM_TMP" >/dev/null
   fi
-  if grep -q '^WAKE_ON_GPIO=' "$EEPROM_TMP"; then
-    sed -i 's/^WAKE_ON_GPIO=.*/WAKE_ON_GPIO=0/' "$EEPROM_TMP"
+  if sudo grep -q '^WAKE_ON_GPIO=' "$EEPROM_TMP"; then
+    sudo sed -i 's/^WAKE_ON_GPIO=.*/WAKE_ON_GPIO=0/' "$EEPROM_TMP"
   else
-    echo 'WAKE_ON_GPIO=0' >>"$EEPROM_TMP"
+    echo 'WAKE_ON_GPIO=0' | sudo tee -a "$EEPROM_TMP" >/dev/null
   fi
   sudo rpi-eeprom-config --apply "$EEPROM_TMP"
-  rm -f "$EEPROM_TMP"
+  sudo rm -f "$EEPROM_TMP"
   echo "   POWER_OFF_ON_HALT=1, WAKE_ON_GPIO=0 applied (reboot may be required)"
 else
   echo "WARN: rpi-eeprom-config not found; skip EEPROM power settings" >&2
