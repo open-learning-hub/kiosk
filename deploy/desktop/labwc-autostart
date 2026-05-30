@@ -1,1 +1,1 @@
-/home/pi/kiosk/deploy/scripts/start-kiosk-browser.sh
+/home/pi/kiosk/deploy/scripts/start-kiosk-browser.sh &

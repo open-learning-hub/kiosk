@@ -29,6 +29,7 @@ exec "$CHROMIUM_BIN" \
   --kiosk \
   --noerrdialogs \
   --disable-infobars \
+  --password-store=basic \
   --check-for-update-interval=31536000 \
   --autoplay-policy=no-user-gesture-required \
   "$KIOSK_URL"

@@ -74,11 +74,33 @@ sudo systemctl restart kiosk-app
 echo ">> Configuring desktop autologin..."
 sudo raspi-config nonint do_boot_behaviour B4 || true
 
-echo ">> Installing labwc autostart..."
+KIOSK_LAUNCHER="$INSTALL_DIR/deploy/scripts/start-kiosk-browser.sh"
+chmod +x "$KIOSK_LAUNCHER"
+
+echo ">> Installing desktop autostart (labwc, Wayfire, LXDE)..."
 mkdir -p "$HOME/.config/labwc"
-AUTOSTART_PATH="$HOME/.config/labwc/autostart"
-sed "s|/home/pi/kiosk|$INSTALL_DIR|g" deploy/desktop/labwc-autostart >"$AUTOSTART_PATH"
-chmod +x "$INSTALL_DIR/deploy/scripts/start-kiosk-browser.sh"
+sed "s|/home/pi/kiosk|$INSTALL_DIR|g" deploy/desktop/labwc-autostart >"$HOME/.config/labwc/autostart"
+
+mkdir -p "$HOME/.config/lxsession/LXDE-pi"
+LXDE_AUTOSTART="$HOME/.config/lxsession/LXDE-pi/autostart"
+if ! grep -qF "$KIOSK_LAUNCHER" "$LXDE_AUTOSTART" 2>/dev/null; then
+  echo "@$KIOSK_LAUNCHER" >>"$LXDE_AUTOSTART"
+fi
+
+WAYFIRE_INI="$HOME/.config/wayfire.ini"
+mkdir -p "$HOME/.config"
+if ! grep -qF "$KIOSK_LAUNCHER" "$WAYFIRE_INI" 2>/dev/null; then
+  if [ -f "$WAYFIRE_INI" ] && grep -q '^\[autostart\]' "$WAYFIRE_INI"; then
+    sed -i "/^\[autostart\]/a kiosk = $KIOSK_LAUNCHER" "$WAYFIRE_INI"
+  elif [ -f "$WAYFIRE_INI" ]; then
+    printf '\n[autostart]\nkiosk = %s\n' "$KIOSK_LAUNCHER" >>"$WAYFIRE_INI"
+  else
+    cat >"$WAYFIRE_INI" <<EOF
+[autostart]
+kiosk = $KIOSK_LAUNCHER
+EOF
+  fi
+fi
 
 echo ">> Ensuring data directory exists..."
 mkdir -p "$INSTALL_DIR/data/uploads"

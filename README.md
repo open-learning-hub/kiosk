@@ -85,17 +85,17 @@ curl http://127.0.0.1:3000/api/health
 **Chromium did not start**
 
 - Confirm autologin: `sudo raspi-config` → System Options → Boot / Auto Login → Desktop Autologin
-- Check labwc autostart: `~/.config/labwc/autostart`
+- Check which compositor is running: `echo $XDG_SESSION_TYPE` and `ps -e | grep -Ei 'labwc|wayfire|lxsession'`
+- Verify autostart for your compositor (re-run `bash deploy/install-pi.sh` to refresh all):
+  - labwc: `~/.config/labwc/autostart`
+  - Wayfire: `~/.config/wayfire.ini` → `[autostart]` section
+  - LXDE/X11: `~/.config/lxsession/LXDE-pi/autostart`
 - Run the browser script manually: `~/kiosk/deploy/scripts/start-kiosk-browser.sh`
 - On Bookworm, install `chromium` (not `chromium-browser`): `sudo apt-get install -y chromium`
 
-**Older Raspberry Pi OS (LXDE)**
+**"Unlock Keyring / Authentication required" dialog**
 
-Add to `~/.config/lxsession/LXDE-pi/autostart`:
-
-```
-@/home/pi/kiosk/deploy/scripts/start-kiosk-browser.sh
-```
+Chromium may prompt for the GNOME keyring on autologin. The kiosk launcher passes `--password-store=basic` to avoid this. If you still see the dialog, re-run `bash deploy/install-pi.sh` (or pull latest and restart the browser script) so the updated flags are used.
 
 ### Security note
 
