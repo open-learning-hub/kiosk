@@ -18,12 +18,12 @@ echo '--- lxde ---'; cat ~/.config/lxsession/LXDE-pi/autostart 2>/dev/null
 
 ~/kiosk/deploy/scripts/start-kiosk-browser.sh
 ● kiosk-app.service - Kiosk Next.js application
-     Loaded: loaded (/etc/systemd/system/kiosk-app.service; enabled; preset: enabled)
-     Active: activating (auto-restart) (Result: exit-code) since Sat 2026-05-30 14:37:48 SAST; 586ms ago
- Invocation: 331351dda38a40269ab723eec28b993b
-    Process: 2132 ExecStart=/usr/bin/node .next/standalone/server.js (code=exited, status=217/USER)
-   Main PID: 2132 (code=exited, status=217/USER)
-        CPU: 8ms
+Loaded: loaded (/etc/systemd/system/kiosk-app.service; enabled; preset: enabled)
+Active: activating (auto-restart) (Result: exit-code) since Sat 2026-05-30 14:37:48 SAST; 586ms ago
+Invocation: 331351dda38a40269ab723eec28b993b
+Process: 2132 ExecStart=/usr/bin/node .next/standalone/server.js (code=exited, status=217/USER)
+Main PID: 2132 (code=exited, status=217/USER)
+CPU: 8ms
 HEALTH FAIL
 echo '--- wayfire ---'; cat ~/.config/wayfire.ini 2>/dev/null
 echo '--- lxde ---'; cat ~/.config/lxsession/LXDE-pi/autostart 2>/dev/null
@@ -35,3 +35,11 @@ kiosk = /home/kiosk-talisman/src/kiosk/deploy/scripts/start-kiosk-browser.sh
 --- lxde ---
 @/home/kiosk-talisman/src/kiosk/deploy/scripts/start-kiosk-browser.sh
 
+===============
+
+systemctl status kiosk-app --no-pager
+echo '=== logs ==='
+journalctl -u kiosk-app -n 40 --no-pager
+echo '=== files ==='
+ls -la ~/kiosk/.env 2>&1
+ls -la ~/kiosk/.next/standalone/server.js 2>&1
