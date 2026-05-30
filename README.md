@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kiosk — Digital Signage
 
-## Getting Started
+Next.js digital signage app for Raspberry Pi. Displays rotating images, videos, and website pages configured via a local admin UI.
 
-First, run the development server:
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the display and [http://localhost:3000/admin](http://localhost:3000/admin) for configuration.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Raspberry Pi Kiosk Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Requirements
 
-## Learn More
+- Raspberry Pi 4 or 5 (recommended)
+- Raspberry Pi OS Desktop (64-bit, Bookworm or newer)
+- Network connection (for website pages and initial font load)
 
-To learn more about Next.js, take a look at the following resources:
+### First-time install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Clone the repo on the Pi (default path `/home/pi/kiosk`):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd ~
+git clone <your-repo-url> kiosk
+cd kiosk
+bash deploy/install-pi.sh
+sudo reboot
+```
 
-## Deploy on Vercel
+After reboot, the Pi should:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Start the Next.js server via systemd (`kiosk-app`)
+2. Autologin to the desktop
+3. Launch Chromium in fullscreen kiosk mode at `http://127.0.0.1:3000`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Updating
+
+From the project directory on the Pi:
+
+```bash
+./deploy.sh
+```
+
+This pulls the latest code, rebuilds, copies standalone assets, and restarts the `kiosk-app` service. Uploaded media in `data/uploads/` is preserved (gitignored).
+
+### URLs
+
+| Purpose | URL |
+|---------|-----|
+| Display (on Pi) | `http://localhost:3000` |
+| Admin (from LAN) | `http://<pi-ip>:3000/admin` |
+| Health check | `http://localhost:3000/api/health` |
+
+Set `HOSTNAME=127.0.0.1` in `.env` if you only want the server reachable on the Pi itself.
+
+### Environment
+
+Copy `.env.example` to `.env`:
+
+```bash
+PORT=3000
+HOSTNAME=0.0.0.0
+NODE_ENV=production
+```
+
+### Troubleshooting
+
+**Service not running**
+
+```bash
+sudo systemctl status kiosk-app
+journalctl -u kiosk-app -f
+```
+
+**App not ready**
+
+```bash
+curl http://127.0.0.1:3000/api/health
+```
+
+**Chromium did not start**
+
+- Confirm autologin: `sudo raspi-config` → System Options → Boot / Auto Login → Desktop Autologin
+- Check labwc autostart: `~/.config/labwc/autostart`
+- Run the browser script manually: `~/kiosk/deploy/scripts/start-kiosk-browser.sh`
+
+**Older Raspberry Pi OS (LXDE)**
+
+Add to `~/.config/lxsession/LXDE-pi/autostart`:
+
+```
+@/home/pi/kiosk/deploy/scripts/start-kiosk-browser.sh
+```
+
+### Security note
+
+The admin UI has no authentication. If `HOSTNAME=0.0.0.0`, restrict port 3000 to your LAN with a firewall (e.g. `ufw allow from 192.168.0.0/24 to any port 3000`).
+
+## Project structure
+
+- `src/app/page.tsx` — kiosk display
+- `src/app/admin/` — configuration UI
+- `data/config.json` — page definitions (gitignored, created on first run)
+- `data/uploads/` — uploaded media (gitignored)
+- `deploy/` — Pi systemd, browser scripts, and install helpers
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `deploy/install-pi.sh` | One-time Pi setup |
+| `deploy.sh` | Pull, build, restart service |
+| `deploy/copy-standalone.sh` | Copy static files into standalone build |
