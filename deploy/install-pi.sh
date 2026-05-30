@@ -45,8 +45,16 @@ echo ">> Copying standalone assets..."
 bash deploy/copy-standalone.sh
 
 if [ ! -f .env ]; then
-  echo ">> Creating .env from .env.example..."
-  cp .env.example .env
+  if [ -f .env.example ]; then
+    cp .env.example .env
+  else
+    cat > .env <<'EOF'
+PORT=3000
+HOSTNAME=0.0.0.0
+NODE_ENV=production
+EOF
+  fi
+  echo ">> Created .env"
 else
   echo ">> Keeping existing .env"
 fi
