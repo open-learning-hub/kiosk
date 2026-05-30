@@ -49,11 +49,11 @@ This pulls the latest code, rebuilds, copies standalone assets, and restarts the
 
 ### URLs
 
-| Purpose | URL |
-|---------|-----|
-| Display (on Pi) | `http://localhost:3000` |
-| Admin (from LAN) | `http://<pi-ip>:3000/admin` |
-| Health check | `http://localhost:3000/api/health` |
+| Purpose          | URL                                |
+| ---------------- | ---------------------------------- |
+| Display (on Pi)  | `http://localhost:3000`            |
+| Admin (from LAN) | `http://<pi-ip>:3000/admin`        |
+| Health check     | `http://localhost:3000/api/health` |
 
 Set `HOSTNAME=127.0.0.1` in `.env` if you only want the server reachable on the Pi itself.
 
@@ -87,6 +87,7 @@ curl http://127.0.0.1:3000/api/health
 - Confirm autologin: `sudo raspi-config` → System Options → Boot / Auto Login → Desktop Autologin
 - Check labwc autostart: `~/.config/labwc/autostart`
 - Run the browser script manually: `~/kiosk/deploy/scripts/start-kiosk-browser.sh`
+- On Bookworm, install `chromium` (not `chromium-browser`): `sudo apt-get install -y chromium`
 
 **Older Raspberry Pi OS (LXDE)**
 
@@ -110,8 +111,8 @@ The admin UI has no authentication. If `HOSTNAME=0.0.0.0`, restrict port 3000 to
 
 ## Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `deploy/install-pi.sh` | One-time Pi setup |
-| `deploy.sh` | Pull, build, restart service |
+| Script                      | Purpose                                 |
+| --------------------------- | --------------------------------------- |
+| `deploy/install-pi.sh`      | One-time Pi setup                       |
+| `deploy.sh`                 | Pull, build, restart service            |
 | `deploy/copy-standalone.sh` | Copy static files into standalone build |
